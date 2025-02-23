@@ -1,62 +1,53 @@
 #!/bin/bash
 
-#Apagar nginx y ngrok 
+# Apagar nginx y ngrok
+echo "Apagando Nginx..."
+sudo systemctl stop nginx
 
-echo "Apagando Nginx"
-sudo service stop nginx
-
-echo "Apagando Ngrok"
+echo "Apagando Ngrok..."
 pkill -f "ngrok"
 
-#Verificar que nginx y ngrok se apagó o no están prendidos
-
+# Verificar que nginx y ngrok se apagaron correctamente
 if ! pgrep -x "nginx" > /dev/null; then
-	echo "Nginx apagado correctamente"
+    echo "Nginx apagado correctamente."
 else
-	echo "Nginx no pudo apagarse o no se encuentra prendido"
+    echo "Nginx no pudo apagarse o no se encuentra prendido."
+fi
 
 if ! pgrep -x "ngrok" > /dev/null; then
-	echo "Ngrok apagado correctamente"
+    echo "Ngrok apagado correctamente."
 else
-	echo "Ngrok no pudo apagarse o no se encuentra prendido"
+    echo "Ngrok no pudo apagarse o no se encuentra prendido."
+fi
 
-# Entrar a la ruta de html
+# Entrar a la ruta de HTML
+echo "Entrando en la ruta del portafolio..."
+cd /var/www/html || exit
 
-echo "Entrando en la ruta del porfatolio"
+# Verificamos si existe la carpeta y si sí, la eliminamos y creamos una nueva
+if [ -d "/var/www/html/Portfolio" ]; then
+    echo "Eliminando el repositorio antiguo..."
+    sudo rm -r /var/www/html/Portfolio
+fi
 
-cd /var/www/html
+echo "Clonando el nuevo repositorio..."
+git clone https://github.com/JoseCQUADY/Portfolio /var/www/html/Portfolio
 
-#Verificamos si existe la carpeta y si sí la eliminamos y creamos una nueva
+echo "Buildeando la nueva imagen del portafolio..."
+cd /var/www/html/Portfolio || exit
+npm install
+npm run build
 
-if [-d /var/www/html/Portfolio]: then
-	echo "Eliminando el repositorio antiguo"
-	sudo rm -r /var/www/Portfolio
-	
-	echo "Clonando el nuevo repositorio"
-	git clone https://github.com/JoseCQUADY/Portfolio
-	
-	echo "Buildeando la nueva imagen del portafolio"
-	cd /var/www/html/Portfolio
-	npm install
-	npm run build
-	echo "Versión actualizada de la web"
-else
-	echo "Clonando el nuevo repositorio"
-	git clone https://github.com/JoseCQUADY/Portfolio
-	
-	echo "Buildeando la nueva imagen del portafolio"
-	cd /var/www/html/Portfolio
-	npm install
-	npm run build
+echo "Versión actualizada de la web."
 
-	echo "Versión actualizada de la web"
+# Encender Nginx y generar URL de Ngrok
+echo "Prendiendo Nginx..."
+sudo systemctl start nginx
 
-echo "Prendiendo Nginx"
-sudo service nginx start
-
-echo "Generando url de Ngrok" 
+echo "Generando URL de Ngrok..."
 ngrok http 80
 
+echo "Script finalizado con éxito."
 
 
 
